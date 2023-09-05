@@ -53,7 +53,7 @@ Van egy cégünk, amely háromféle AI API-t kínál:
 
 
 #### Chatbot API
-Erről nem sok maradt meg, hogy ez mit tud, de remélhetőleg semmi extra. A részletek valószínűleg itt is az OpenAPI yml-ből fognak kiderülni.
+Erről nem sok maradt meg, hogy ez mit tud, de remélhetőleg semmi extra. A részletek valószínűleg itt is az OpenAPI yml-ből fognak kiderülni. **Update**: ha lassanjönnek az adatok, akkor mp-es delayjel kell gépelési effektust szimulálni (egyesével megjeleníteni a betűket). Az hogy mit jelent a "lassan jönnek" valószínűleg az API doksiból fog kiderülni.
 
 #### Képgenerálő API
 Itt van több fázis. Először az API generál egy preview-t, amit fade effecttel kell megjeleníteni, utáni pollozni kell a státuszt, ha jól emlékszem 2 percenként, és a progrest is meg kell jeleníteni, hogy hány százalékon áll a generálás.

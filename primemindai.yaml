@@ -5,17 +5,13 @@ info:
   description: This API provides access to various AI services including Chatbot, Image Generation, and Image Recognition.
 
 paths:
-  /api/v1/chatbot:
+  /api/v1/chatbot/prompt:
     post:
-      summary: Interact with Chatbot
+      summary: Initialize interaction with Chatbot
       description: >-
         This endpoint validates the provided token for its existence and non-revocation status,
         and checks if the associated workspace has exceeded its usage limit. 
-        It then calls the internal /private/api/v1/chatbot API and forwards its response along with 
-        the time elapsed in milliseconds (usage) between the request and the response. 
-        If the 'completed' field in the response is 'false', the API will automatically 
-        send another request after 5 seconds to append the new part of the message to the existing one.
-        This behavior continues until 'completed' becomes 'true'.
+        It initiates the chat interaction if it does not exist (there is no chat ID in the request) and provides a prompt ID for tracking the respond to the prompt.
       requestBody:
         required: true
         content:
@@ -29,18 +25,15 @@ paths:
                 chatId:
                   type: string
                   description: The optional chat ID to maintain a stateful conversation.
-                message:
+                prompt:
                   type: string
-                  description: The message to send to the chatbot.
-                promptId:
-                  type: string
-                  description: The optional unique identifier for the prompt.
+                  description: The initial prompt to send to the chatbot.
               required:
                 - token
-                - message
+                - prompt
       responses:
         '200':
-          description: Successful operation.
+          description: Chat/prompt initialized successfully.
           content:
             application/json:
               schema:
@@ -49,20 +42,11 @@ paths:
                   chatId:
                     type: string
                     description: The chat ID.
-                  message:
-                    type: string
-                    description: The (potentially partial) response message from the chatbot.
-                  completed:
-                    type: boolean
-                    description: Indicates if the chatbot has completed generating the full response.
                   promptId:
                     type: string
                     description: A unique identifier for the prompt.
-                  usage:
-                    type: number
-                    description: Time elapsed in milliseconds between the request and the response.
         '404':
-          description: Invalid token.
+          description: Invalid token (token does not exist or it was revocated)
           content:
             application/json:
               schema:
@@ -70,7 +54,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    description: Error message. Example: "invalid token"
+                    description: Error message. Example: "invalid token or token"
         '429':
           description: API limit exceeded.
           content:
@@ -81,3 +65,31 @@ paths:
                   message:
                     type: string
                     description: Error message. Example: "limit exceeded"
+  /api/v1/chatbot/{promptId}:
+    get:
+      summary: Retrieve Chatbot Response
+      description: >-
+        This endpoint allows for retrieving the chatbot response associated with a specific prompt ID. If the 'completed' field is 'false', another request should be made to get the remaining part of the message. This continues until 'completed' is 'true'.
+      parameters:
+        - name: promptId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  answer:
+                    type: string
+                    description: The (potentially partial) response message from the chatbot.
+                  completed:
+                    type: boolean
+                    description: Indicates if the chatbot has completed generating the full response.
+                  usage:
+                    type: number
+                    description: Time elapsed in milliseconds since the initial POST request that generated this prompt.

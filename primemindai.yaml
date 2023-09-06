@@ -9,11 +9,13 @@ paths:
     post:
       summary: Interact with Chatbot
       description: >-
-        This endpoint first validates the provided token to check its existence 
-        and if it has not been revoked. It also checks if the workspace associated 
-        with this API has not exceeded its limit. If all checks pass, it calls the 
-        internal /private/api/v1/chatbot API and forwards its response along with 
-        the time elapsed in milliseconds (usage) between the request and the response.
+        This endpoint validates the provided token for its existence and non-revocation status,
+        and checks if the associated workspace has exceeded its usage limit. 
+        It then calls the internal /private/api/v1/chatbot API and forwards its response along with 
+        the time elapsed in milliseconds (usage) between the request and the response. 
+        If the 'completed' field in the response is 'false', the API will automatically 
+        send another request after 5 seconds to append the new part of the message to the existing one.
+        This behavior continues until 'completed' becomes 'true'.
       requestBody:
         required: true
         content:
@@ -26,10 +28,13 @@ paths:
                   description: The authentication token.
                 chatId:
                   type: string
-                  description: The optional chat ID to maintain state.
+                  description: The optional chat ID to maintain a stateful conversation.
                 message:
                   type: string
                   description: The message to send to the chatbot.
+                promptId:
+                  type: string
+                  description: The optional unique identifier for the prompt.
               required:
                 - token
                 - message
@@ -46,7 +51,13 @@ paths:
                     description: The chat ID.
                   message:
                     type: string
-                    description: The response message from the chatbot.
+                    description: The (potentially partial) response message from the chatbot.
+                  completed:
+                    type: boolean
+                    description: Indicates if the chatbot has completed generating the full response.
+                  promptId:
+                    type: string
+                    description: A unique identifier for the prompt.
                   usage:
                     type: number
                     description: Time elapsed in milliseconds between the request and the response.
@@ -59,8 +70,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    description: Error message.
-                    example: "invalid token"
+                    description: Error message. Example: "invalid token"
         '429':
           description: API limit exceeded.
           content:
@@ -70,5 +80,4 @@ paths:
                 properties:
                   message:
                     type: string
-                    description: Error message.
-                    example: "limit exceeded"
+                    description: Error message. Example: "limit exceeded"

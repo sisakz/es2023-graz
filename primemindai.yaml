@@ -11,7 +11,7 @@ paths:
       description: >-
         This endpoint validates the provided token for its existence and non-revocation status,
         and checks if the associated workspace has exceeded its usage limit. 
-        It initiates the chat interaction if it does not exist (there is no chat ID in the request) and provides a prompt ID for tracking the respond to the prompt.
+        It initiates the chat interaction if it does not exist (there is no chat ID in the request) and provides a prompt ID for tracking the response to the prompt.
       requestBody:
         required: true
         content:
@@ -46,7 +46,7 @@ paths:
                     type: string
                     description: A unique identifier for the prompt.
         '404':
-          description: Invalid token (token does not exist or it was revocated)
+          description: Invalid token (token does not exist or it was revoked)
           content:
             application/json:
               schema:
@@ -54,7 +54,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    description: Error message. Example: "invalid token or token"
+                    description: Error message. Example: "invalid token"
         '429':
           description: API limit exceeded.
           content:
@@ -65,6 +65,17 @@ paths:
                   message:
                     type: string
                     description: Error message. Example: "limit exceeded"
+        '503':
+          description: Internal service unavailable.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message. Example: "No response from internal API"
+  
   /api/v1/chatbot/{promptId}:
     get:
       summary: Retrieve Chatbot Response
@@ -93,3 +104,13 @@ paths:
                   usage:
                     type: number
                     description: Time elapsed in milliseconds since the initial POST request that generated this prompt.
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message. Example: "No response from chatbot service"

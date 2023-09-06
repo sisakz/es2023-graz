@@ -1,0 +1,74 @@
+openapi: 3.0.0
+info:
+  title: PrimeMind AI Public API
+  version: 1.0.0
+  description: This API provides access to various AI services including Chatbot, Image Generation, and Image Recognition.
+
+paths:
+  /api/v1/chatbot:
+    post:
+      summary: Interact with Chatbot
+      description: >-
+        This endpoint first validates the provided token to check its existence 
+        and if it has not been revoked. It also checks if the workspace associated 
+        with this API has not exceeded its limit. If all checks pass, it calls the 
+        internal /private/api/v1/chatbot API and forwards its response along with 
+        the time elapsed in milliseconds (usage) between the request and the response.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: The authentication token.
+                chatId:
+                  type: string
+                  description: The optional chat ID to maintain state.
+                message:
+                  type: string
+                  description: The message to send to the chatbot.
+              required:
+                - token
+                - message
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chatId:
+                    type: string
+                    description: The chat ID.
+                  message:
+                    type: string
+                    description: The response message from the chatbot.
+                  usage:
+                    type: number
+                    description: Time elapsed in milliseconds between the request and the response.
+        '404':
+          description: Invalid token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message.
+                    example: "invalid token"
+        '429':
+          description: API limit exceeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message.
+                    example: "limit exceeded"
